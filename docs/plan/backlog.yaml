@@ -89,7 +89,7 @@ items:
       - Generative music (DiffSynth-Studio, ACE-Step), external VST3/AU hosting, AGPL code, and the radio app: see the PRD non-goals.
   - {id: D-11, title: "Which of the brief's SoundCraft claims hold in the real repo?", wayfinder: research, parent: MAP-0, gate: g0,
      body: "Check every SoundCraft command, crate, PR and issue the PRD relies on (markers.add, batch keep_going, instrument slots, MCP read/write roots, track presets, export) against the upstream repo and its v0.7.0 release. Record each as confirmed / different / missing, with links."}
-  - {id: T0-4, title: "SoundCraft spike: build v0.7.0 and drive it headless", wayfinder: prototype, parent: MAP-0, gate: g0, blocked_by: [D-11],
+  - {id: T0-4, title: "SoundCraft spike: build v0.8+ on Windows and drive it headless", wayfinder: prototype, parent: MAP-0, gate: g0, blocked_by: [D-11],
      body: "Build SoundCraft v0.7.0 on the workstation, open a stem folder headless over CLI/MCP, and report every command the PRD relies on as works / missing / broken. The artifact is a short spike report, linked here."}
   - {id: D-1, title: "Host: SoundCraft or the Python studio plus a web UI?", wayfinder: grilling, parent: MAP-0, gate: g0, blocked_by: [D-11, T0-4],
      body: "Decide the host from the research and the spike. Record the decision as an ADR in docs/adr/."}
@@ -97,10 +97,12 @@ items:
   - {id: D-4, title: "Which cloud STT and TTS services enter the first tournament, per language?", wayfinder: research, parent: MAP-0, gate: g0,
      body: "Shortlist services with English and Lithuanian support for sung and spoken audio: word timestamps, pricing, rate limits, terms. Output: the T0-6 tournament line-up."}
   - {id: D-6, title: "Who are the first approved musicians for English and Lithuanian, and how are they paid or credited?", wayfinder: task, parent: MAP-0, gate: g0}
-  - {id: D-5, title: "Sourcing: which sources switch on first, and what are the disk and cloud budgets?", wayfinder: grilling, parent: MAP-0, gate: g0, blocked_by: [D-4]}
+  - {id: D-5, title: "Sourcing: which sources switch on first, and what are the disk and cloud budgets?", wayfinder: grilling, parent: MAP-0, gate: g0, blocked_by: [D-4, D-12]}
   - {id: D-3, title: "Which built-in synth does matching target first, with which parameters?", wayfinder: research, parent: MAP-0, gate: g1, blocked_by: [D-1]}
   - {id: D-7, title: "Use tier D community sources (MuseScore, TAB sites), or only tiers A–C and E?", wayfinder: grilling, parent: MAP-0, gate: g1}
   - {id: D-8, title: "Which Lithuanian archives give access, and on what terms?", wayfinder: research, parent: MAP-0, gate: g1}
+  - {id: D-12, title: "What reuse terms do LLTI and LNKC give for test data?", wayfinder: task, parent: MAP-0, gate: g0,
+     body: "Ask the LLTI Lithuanian Folklore Archives and LNKC for reuse terms for gold-standard test data; see docs/research/lithuanian-archives.md."}
   - {id: D-9, title: "What is the smallest exportable loop unit: chord span, bar or phrase?", wayfinder: prototype, parent: MAP-0, gate: g3}
   - {id: D-10, title: "Mix limits: how far can tempo stretch and transposition go for this music?", wayfinder: prototype, parent: MAP-0, gate: g3}
 
