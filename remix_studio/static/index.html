@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REMIX DNA // Audio-to-MIDI & Multi-Genre Studio</title>
+  <link rel="stylesheet" href="/style.css?v=2.2">
+</head>
+<body>
+  <div class="studio-container">
+    <!-- Top Header -->
+    <header class="studio-header">
+      <div class="branding">
+        <span class="badge">REMIX DNA STUDIO v1.0</span>
+        <h1>AUDIO-TO-MIDI & MULTI-GENRE WORKSTATION</h1>
+        <p class="subtitle">Autonomous Structure Recording, Neural Stem Separation, Voice Replication & Dancefloor Synthesis</p>
+      </div>
+      <div class="header-track-info">
+        <div class="info-pill"><span class="label">CURRENT TRACK</span> <strong id="track-title">Kolorado vabalai - Vytautas Kernagis</strong></div>
+        <div class="info-pill"><span class="label">ORIGINAL BPM</span> <strong id="track-bpm">152.0</strong></div>
+        <div class="info-pill"><span class="label">ROOT KEY</span> <strong id="track-key">A Minor / C Major</strong></div>
+        <div class="info-pill"><span class="label">REMIX TARGET</span> <strong class="glow-accent">174 BPM Ragga Jungle</strong></div>
+      </div>
+    </header>
+
+    <!-- Master Transport Bar -->
+    <section class="master-transport">
+      <div class="transport-controls">
+        <button id="btn-master-play" class="btn-primary">▶ PLAY ALL STEMS</button>
+        <button id="btn-master-stop" class="btn-secondary">⏹ STOP</button>
+        <div class="time-display" id="time-display">00:00.00 / 01:00.00</div>
+      </div>
+      <div class="loop-controls">
+        <span class="loop-label">LOOP REGION:</span>
+        <button class="btn-pill active" data-loop="4">4 BARS</button>
+        <button class="btn-pill" data-loop="8">8 BARS</button>
+        <button class="btn-pill" data-loop="16">16 BARS</button>
+        <button class="btn-pill" data-loop="all">FULL</button>
+      </div>
+      <div class="master-vol-container">
+        <span class="loop-label">MASTER VOL</span>
+        <input type="range" id="master-vol" min="0" max="1.5" step="0.05" value="1.0">
+      </div>
+    </section>
+
+    <!-- Main Grid Layout -->
+    <div class="studio-grid">
+      
+      <!-- LEFT COLUMN: Multi-Track Visual Stem Deck -->
+      <section class="studio-panel stem-deck-panel">
+        <div class="panel-header">
+          <h2>🎛️ DYNAMIC AUDIO LAYER SEPARATION (STEMS)</h2>
+          <div class="panel-actions" style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+            <span class="model-badge" id="discovery-badge">6-Source Discovery Active</span>
+            <button id="btn-open-library-modal" class="btn-action" style="background:#2563eb; color:#fff; border-color:#2563eb;">📚 SONG LIBRARY</button>
+            <button id="btn-open-surgery-modal" class="btn-action" style="background:#059669; color:#fff; border-color:#059669;">🪢 LAYER SURGERY</button>
+            <button id="btn-open-ingest-modal" class="btn-action" style="background:#8b5cf6; color:#fff; border-color:#8b5cf6;">📥 INGEST NEW SONG</button>
+            <button id="btn-open-discovery-modal" class="btn-action">⚙️ CONFIGURE LAYERS</button>
+          </div>
+        </div>
+        <div class="stem-tracks-container" id="stem-tracks">
+          <!-- Dynamically generated from song_manifest.json -->
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Score, Transposition, Voice Lab & Quality -->
+      <div class="right-stack">
+
+        <!-- Sheet Music & Transposition Matrix -->
+        <section class="studio-panel score-panel">
+          <div class="panel-header">
+            <h2>🎼 SHEET MUSIC & MULTI-LAYER TRANSPOSITION</h2>
+            <div class="panel-actions">
+              <a href="/download/midi" class="btn-dl">⬇ MIDI (.mid)</a>
+              <a href="/download/musicxml" class="btn-dl">⬇ MusicXML</a>
+            </div>
+          </div>
+
+          <!-- Dynamic Layer Switcher Tabs -->
+          <div class="layer-switcher-bar">
+            <span class="label">DISPLAY SCORE LAYER:</span>
+            <div class="layer-tabs" id="layer-tabs">
+              <!-- Dynamically populated from manifest active harmonic layers -->
+            </div>
+          </div>
+          
+          <!-- Transposition Controls -->
+          <div class="transposition-bar">
+            <div class="trans-slider-row">
+              <span class="label">TRANSPOSE NOTES:</span>
+              <input type="range" id="semitone-slider" min="-12" max="12" step="1" value="0">
+              <span class="semitone-val" id="semitone-display">+0 semitones</span>
+              <div class="quick-transpose-pills">
+                <button class="pill-st" data-st="-5">-5 st</button>
+                <button class="pill-st" data-st="-2">-2 st</button>
+                <button class="pill-st active" data-st="0">Orig (F)</button>
+                <button class="pill-st" data-st="2">+2 st (G)</button>
+                <button class="pill-st" data-st="3">+3 st (Ab)</button>
+                <button class="pill-st" data-st="5">+5 st (Bb)</button>
+                <button class="pill-st" data-st="7">+7 st (C)</button>
+              </div>
+            </div>
+
+            <!-- Sound Audition Controls -->
+            <div class="trans-audition-row" style="flex-wrap: wrap; gap: 0.5rem;">
+              <button id="btn-play-score-notes" class="btn-audition-notes">▶ PLAY TRANSPOSED SCORE NOTES (SYNTH)</button>
+              <button id="btn-play-synth-chord" class="btn-audition-chord">🔊 PLAY TONIC CHORD</button>
+              <button id="btn-play-transposed-audio" class="btn-audition-audio">▶ AUDITION TRANSPOSED LAYER AUDIO</button>
+              <button id="btn-play-synthetic-layer" class="btn-audition-audio" style="background:#0284c7; border-color:#38bdf8;">🤖 AUDITION SYNTHETIC LAYER (ACE)</button>
+              <div class="voice-selector-box" style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.78rem; color:#94a3b8; font-family:monospace;">
+                <span>🗣️ NEURAL VOICE:</span>
+                <select id="sel-synth-voice" style="background:#0b1329; color:#38bdf8; border:1px solid #38bdf8; border-radius:4px; padding:0.25rem 0.5rem; font-size:0.75rem; font-family:monospace; cursor:pointer;">
+                  <option value="lt-LT-LeonasNeural">lt-LT-LeonasNeural (Male - Kernagis)</option>
+                  <option value="lt-LT-OnaNeural">lt-LT-OnaNeural (Female)</option>
+                  <option value="en-US-AndrewNeural">en-US-AndrewNeural (English Male)</option>
+                  <option value="en-GB-RyanNeural">en-GB-RyanNeural (UK DnB Emcee)</option>
+                </select>
+              </div>
+              <button id="btn-recreate-master" class="btn-action" style="background:#6366f1; color:#fff; border-color:#818cf8;">⚡ RECREATE MASTER SONG</button>
+              <span class="trans-help-hint">💡 Tip: Click any note on the sheet music to hear its exact pitch!</span>
+            </div>
+
+            <!-- ACE Closed-Loop Accuracy HUD -->
+            <div class="accuracy-hud" id="accuracy-hud" style="display:flex; align-items:center; gap:0.6rem; background:#0b1329; border:1px solid #10b981; border-radius:6px; padding:0.4rem 0.8rem; font-size:0.78rem; font-family:monospace; color:#e2e8f0; margin-top:0.6rem; flex-wrap:wrap;">
+              <span style="color:#10b981; font-weight:bold;">🎯 ACE ACCURACY:</span>
+              <span>FIDELITY: <strong class="glow-green" id="acc-fidelity">67.2%</strong></span> |
+              <span>PITCH (RPA): <strong class="glow-blue" id="acc-pitch">51.1%</strong></span> |
+              <span>HARMONIC CHROMA: <strong class="glow-gold" id="acc-chroma">85.8%</strong></span> |
+              <span>RMS TIMING: <strong class="glow-accent" id="acc-rms">84.5%</strong></span>
+            </div>
+
+            <!-- Dynamic Layer Routing Matrix -->
+            <div class="layer-routing-matrix" id="layer-routing-matrix">
+              <!-- Dynamically populated from manifest active layers -->
+            </div>
+          </div>
+
+          <!-- SVG Score Viewer Container -->
+          <div class="score-viewer-wrapper" id="score-viewer">
+            <div class="score-loading">Rendering interactive lead sheet...</div>
+          </div>
+        </section>
+
+        <!-- Multi-Tool Voice Generation & Replication Bench -->
+        <section class="studio-panel voice-panel">
+          <div class="panel-header">
+            <h2>🎙️ VOICE REPLICATION EVALUATION BENCH (A/B TESTING)</h2>
+            <span class="model-badge">Multi-Engine Suite</span>
+          </div>
+          <div class="vocal-engines-grid">
+            <!-- Engine A -->
+            <div class="engine-card">
+              <div class="card-title">ENGINE A // STEM CHOPS + STUDIO DSP</div>
+              <p class="card-desc">Isolated original stem + 160Hz HPF + tape saturation + BPM dub delays.</p>
+              <div class="metric-row"><span class="m-label">Timbre Match:</span> <strong class="glow-green">100% (Authentic)</strong></div>
+              <button class="btn-audition" data-audio="/audio/vocal_tests/engine_a_stem_rack.wav">▶ AUDITION ENGINE A</button>
+            </div>
+
+            <!-- Engine B -->
+            <div class="engine-card">
+              <div class="card-title">ENGINE B // TIMBRE PITCH SHIFT (+2 ST)</div>
+              <p class="card-desc">Phase-vocoder pitch-shift without chipmunk formant degradation.</p>
+              <div class="metric-row"><span class="m-label">Pitch Tuning:</span> <strong class="glow-blue">Clean (+2 st)</strong></div>
+              <button class="btn-audition" data-audio="/audio/vocal_tests/engine_b_pitch_shift.wav">▶ AUDITION ENGINE B</button>
+            </div>
+
+            <!-- Engine C -->
+            <div class="engine-card">
+              <div class="card-title">ENGINE C // NEURAL LYRIC RE-SYNTHESIS</div>
+              <p class="card-desc">Lithuanian neural voice model reciting transcribed lyrics with prosody.</p>
+              <div class="metric-row"><span class="m-label">Clarity:</span> <strong class="glow-gold">Studio Broadcast</strong></div>
+              <button class="btn-audition" data-audio="/audio/vocal_tests/engine_c_neural.wav">▶ AUDITION ENGINE C</button>
+            </div>
+
+            <!-- Engine D -->
+            <div class="engine-card">
+              <div class="card-title">ENGINE D // THE HYBRID CHAIN (A+B+C)</div>
+              <p class="card-desc">Natural stem chops layered with neural speech doubling and stereo widening.</p>
+              <div class="metric-row"><span class="m-label">Presence:</span> <strong class="glow-accent">Maximum Depth</strong></div>
+              <button class="btn-audition" data-audio="/audio/vocal_tests/engine_d_hybrid.wav">▶ AUDITION ENGINE D</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Looped Quality Verification & Multi-Genre Remix Outputs -->
+        <section class="studio-panel remix-panel">
+          <div class="panel-header">
+            <h2>⚡ LOOPED QUALITY CHECKS & MULTI-GENRE GENERATIVE REMIXES</h2>
+            <button id="btn-run-qc" class="btn-action">RUN QUALITY CHECK</button>
+          </div>
+          
+          <!-- Quality Check Gauges -->
+          <div class="quality-metrics-deck" id="quality-deck">
+            <div class="qc-metric">
+              <div class="qc-val glow-green" id="qc-cents">28.4 ¢</div>
+              <div class="qc-title">f0 PITCH DEVIATION (RMSE)</div>
+              <div class="qc-sub">Studio Pitch Tolerance (&lt; 30¢)</div>
+            </div>
+            <div class="qc-metric">
+              <div class="qc-val glow-blue" id="qc-jitter">30.3 ms</div>
+              <div class="qc-title">TRANSIENT GRID JITTER</div>
+              <div class="qc-sub">16th Note Sync Grid</div>
+            </div>
+            <div class="qc-metric">
+              <div class="qc-val glow-gold" id="qc-consonance">64.2%</div>
+              <div class="qc-title">HARMONIC CONSONANCE</div>
+              <div class="qc-sub">Bass / Chord Key Coherence</div>
+            </div>
+          </div>
+
+          <!-- Genre Switcher Tabs -->
+          <div class="layer-switcher-bar" style="margin-bottom: 1rem;">
+            <span class="label">SELECT REMIX GENRE:</span>
+            <div class="genre-tabs" style="display:flex; gap:0.5rem;">
+              <button class="btn-pill active btn-genre-tab" data-genre="jungle">🌴 JUNGLE (174 BPM)</button>
+              <button class="btn-pill btn-genre-tab" data-genre="techno">⚡ TECHNO (134 BPM)</button>
+              <button class="btn-pill btn-genre-tab" data-genre="house">🪩 HOUSE (126 BPM)</button>
+            </div>
+          </div>
+
+          <!-- Remix Audition Section -->
+          <div class="remix-player-box">
+            <div class="remix-meta">
+              <div class="remix-title" id="remix-genre-title">🌴 KOLORADO VABALAI (174 BPM RAGGA JUNGLE RE-CREATION)</div>
+              <p id="remix-genre-desc">Amen Break Slicing // 808 Sub-Bassline // Dub Delay Chops // Airhorn Drops // Vocal Lead</p>
+            </div>
+            <div class="remix-buttons">
+              <button id="btn-play-remix" class="btn-primary">▶ PLAY REMIX</button>
+              <button id="btn-play-loop" class="btn-secondary">🔁 4-BAR CLICK-FREE LOOP</button>
+              <a id="btn-dl-remix" href="/audio/remixes/kolorado_vabalai_jungle_remix.wav" download="kolorado_vabalai_jungle_remix.wav" class="btn-dl">⬇ DOWNLOAD REMIX WAV</a>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  <!-- Dynamic Layer Configuration Modal -->
+  <div class="modal-backdrop" id="layer-modal" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>🎛️ SONG LAYER DISCOVERY & CONFIGURATION</h3>
+        <button class="btn-close-modal" id="btn-close-modal">✕</button>
+      </div>
+      <p class="modal-desc">Review detected instrument layers and energy metrics, and toggle active layers for this song:</p>
+      <div class="modal-layers-list" id="modal-layers-list">
+        <!-- Dynamically populated from song_manifest.json -->
+      </div>
+      <div class="modal-footer">
+        <button id="btn-save-layers" class="btn-primary">✔ SAVE & RE-ALIGN STUDIO</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ingest New Song Modal -->
+  <div class="modal-backdrop" id="ingest-modal" style="display:none;">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3>📥 INGEST NEW SONG OR YOUTUBE URL</h3>
+        <button class="btn-close-modal" id="btn-close-ingest-modal">✕</button>
+      </div>
+      <p class="modal-desc">Autonomous multi-source neural separation, dynamic layer discovery, polyphonic note transcription, and multi-genre dancefloor remixing:</p>
+      
+      <div style="display:flex; flex-direction:column; gap:0.9rem; margin-top:1rem;">
+        <div>
+          <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.3rem;">YOUTUBE URL OR LOCAL AUDIO PATH</label>
+          <input type="text" id="ingest-source" placeholder="https://www.youtube.com/watch?v=... or path/to/song.wav" style="width:100%; padding:0.6rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:#fff; font-family:monospace;">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+          <div>
+            <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.3rem;">TITLE (OPTIONAL)</label>
+            <input type="text" id="ingest-title" placeholder="Auto-detected from YouTube" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:#fff;">
+          </div>
+          <div>
+            <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.3rem;">ARTIST (OPTIONAL)</label>
+            <input type="text" id="ingest-artist" placeholder="Auto-detected from YouTube" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:#fff;">
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+          <div>
+            <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.3rem;">TARGET REMIX BPM</label>
+            <input type="number" id="ingest-bpm" value="174" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:#fff;">
+          </div>
+          <div>
+            <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.3rem;">DEMIXING MODEL</label>
+            <select id="ingest-model" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:#fff;">
+              <option value="htdemucs_6s">HTDemucs 6-Source (Guitar, Piano, Bass, Vocals, Drums, Other)</option>
+            </select>
+          </div>
+        </div>
+        <!-- Live Mission Control Telemetry Box -->
+        <div id="ingest-status-box" style="display:none; margin-top:0.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span id="ingest-status-text" style="font-weight:bold; font-size:0.85rem; color:#00f0ff;">⏳ Initializing ingestion pipeline...</span>
+            <span id="ingest-pct-badge" style="font-family:monospace; font-size:0.85rem; font-weight:bold; color:#a855f7;">0%</span>
+          </div>
+          
+          <div class="progress-track">
+            <div class="progress-fill" id="ingest-progress-bar"></div>
+          </div>
+
+          <!-- 6-Stage Visual Stepper -->
+          <div class="ingest-stepper" id="ingest-stepper">
+            <div class="stepper-stage" id="stage-downloading">
+              <span>📥 1. Audio Acquisition & Normalization</span>
+              <span class="stepper-badge" id="badge-downloading">PENDING</span>
+            </div>
+            <div class="stepper-stage" id="stage-analyzing">
+              <span>🔍 2. Tempo (BPM) & Root Key Detection</span>
+              <span class="stepper-badge" id="badge-analyzing">PENDING</span>
+            </div>
+            <div class="stepper-stage" id="stage-demixing">
+              <span>🧠 3. Neural 6-Source Demixing (HTDemucs 6s)</span>
+              <span class="stepper-badge" id="badge-demixing">PENDING</span>
+            </div>
+            <div class="stepper-stage" id="stage-profiling">
+              <span>📊 4. Dynamic Layer Discovery & Metrics</span>
+              <span class="stepper-badge" id="badge-profiling">PENDING</span>
+            </div>
+            <div class="stepper-stage" id="stage-transcribing">
+              <span>🎼 5. Polyphonic Note & Lyric Transcription</span>
+              <span class="stepper-badge" id="badge-transcribing">PENDING</span>
+            </div>
+            <div class="stepper-stage" id="stage-remixing">
+              <span>🌴 6. Multi-Genre Dancefloor Remix Generation</span>
+              <span class="stepper-badge" id="badge-remixing">PENDING</span>
+            </div>
+          </div>
+
+          <!-- Live Log Drawer -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+            <span style="font-size:0.7rem; color:#64748b; font-weight:bold;">LIVE TELEMETRY STREAM</span>
+            <span id="log-count-indicator" style="font-size:0.65rem; color:#64748b; font-family:monospace;">0 lines</span>
+          </div>
+          <pre class="terminal-box" id="ingest-terminal-logs">Waiting for telemetry stream...</pre>
+          
+          <div id="ingest-error-box" style="display:none; margin-top:0.6rem; padding:0.6rem; background:rgba(239,68,68,0.15); border:1px solid #ef4444; border-radius:4px; font-size:0.75rem; color:#fca5a5;">
+            <strong>⚠️ Ingestion Error:</strong> <span id="ingest-error-msg"></span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer" style="margin-top:1.2rem; display:flex; gap:0.6rem;">
+        <button id="btn-cancel-ingest" class="btn-secondary" style="display:none;">✕ CLOSE</button>
+        <button id="btn-start-ingest" class="btn-primary" style="background:#8b5cf6;">🚀 LAUNCH AUTONOMOUS INGESTION</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Persistent Song Library Modal -->
+  <div class="modal-backdrop" id="library-modal" style="display:none;">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3>📚 INGESTED SONGS DATABASE CATALOG</h3>
+        <button class="btn-close-modal" id="btn-close-library-modal">✕</button>
+      </div>
+      <p class="modal-desc">Browse previously ingested pieces saved in the persistent SQLite database and instantly load them into the studio:</p>
+      
+      <div id="library-songs-list" class="library-songs-list" style="display:flex; flex-direction:column; gap:0.75rem; margin-top:1rem; max-height:360px; overflow-y:auto;">
+        <!-- Dynamically rendered via /api/songs -->
+      </div>
+      
+      <div class="modal-footer" style="margin-top:1.2rem; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.75rem; color:#64748b;">Persistent Storage: SQLite (<code>database/remix_studio.db</code>)</span>
+        <button id="btn-library-new-ingest" class="btn-action" style="background:#8b5cf6; color:#fff; border-color:#8b5cf6;">📥 Ingest Another Track</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer Surgery (Merge & Split) Modal -->
+  <div class="modal-backdrop" id="surgery-modal" style="display:none;">
+    <div class="modal-box" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3>🪢 LAYER SURGERY ENGINE</h3>
+        <button class="btn-close-modal" id="btn-close-surgery-modal">✕</button>
+      </div>
+      <p class="modal-desc">Precision stem merge and Linkwitz-Riley frequency crossover splitting for correcting separation artifacts:</p>
+      
+      <!-- Surgery Tabs -->
+      <div style="display:flex; gap:0.5rem; margin-top:1rem; border-bottom:1px solid #1e293b; padding-bottom:0.5rem;">
+        <button id="tab-surgery-merge" class="btn-pill active" style="padding:0.4rem 0.9rem;">🪢 MERGE LAYERS</button>
+        <button id="tab-surgery-split" class="btn-pill" style="padding:0.4rem 0.9rem;">✂️ SPLIT LAYER</button>
+      </div>
+
+      <!-- MERGE PANEL -->
+      <div id="surgery-merge-panel" style="margin-top:1rem; display:flex; flex-direction:column; gap:0.9rem;">
+        <div style="background:rgba(5,150,105,0.12); border:1px solid rgba(5,150,105,0.4); border-radius:6px; padding:0.75rem; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong style="color:#10b981; font-size:0.85rem;">🎸 Recommended Action:</strong>
+            <p style="font-size:0.75rem; color:#94a3b8; margin-top:0.2rem;">Merge split <em>Bassline</em> (thumb notes) and <em>Acoustic Guitar</em> (strums) into unified full-range guitar.</p>
+          </div>
+          <button id="btn-quick-merge-guitar" class="btn-action" style="background:#059669; color:#fff; border-color:#059669; white-space:nowrap; font-weight:bold;">⚡ PRESET: FOLK GUITAR</button>
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.4rem;">SELECT SOURCE LAYERS TO MERGE:</label>
+          <div id="surgery-merge-checklist" style="display:flex; flex-direction:column; gap:0.5rem; max-height:160px; overflow-y:auto; background:#020617; padding:0.6rem; border-radius:6px; border:1px solid #1e293b;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+          <div>
+            <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.3rem;">TARGET LAYER ID</label>
+            <input type="text" id="merge-target-id" value="acoustic_guitar" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:#fff; font-family:monospace;">
+          </div>
+          <div>
+            <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.3rem;">TARGET DISPLAY NAME</label>
+            <input type="text" id="merge-target-name" value="Acoustic Guitar (Full Range)" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:#fff;">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+          <div>
+            <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.3rem;">SHEET MUSIC CLEF</label>
+            <select id="merge-target-clef" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:#fff;">
+              <option value="grand_staff">Grand Staff (Treble + Bass Clefs)</option>
+              <option value="treble">Treble Clef</option>
+              <option value="bass">Bass Clef</option>
+            </select>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem; padding-top:1.2rem;">
+            <input type="checkbox" id="merge-replace-sources" checked>
+            <label for="merge-replace-sources" style="font-size:0.75rem; color:#cbd5e1; cursor:pointer;">Deactivate source layers after merge</label>
+          </div>
+        </div>
+
+        <div id="merge-status-box" style="display:none; padding:0.6rem; border-radius:4px; font-size:0.8rem;"></div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.6rem; margin-top:0.5rem;">
+          <button id="btn-execute-merge" class="btn-primary" style="background:#059669;">🪢 EXECUTE LAYER MERGE</button>
+        </div>
+      </div>
+
+      <!-- SPLIT PANEL -->
+      <div id="surgery-split-panel" style="margin-top:1rem; display:none; flex-direction:column; gap:0.9rem;">
+        <div>
+          <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.4rem;">SELECT LAYER TO SPLIT:</label>
+          <select id="split-source-select" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:#fff;">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+            <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold;">CROSSOVER FREQUENCY & NOTE SPLIT POINT</label>
+            <span id="split-freq-display" style="font-family:monospace; font-size:0.8rem; color:#00f0ff;">200 Hz (Pitch: G3 / C4)</span>
+          </div>
+          <input type="range" id="split-freq-slider" min="80" max="600" step="10" value="200" style="width:100%;">
+          <p style="font-size:0.7rem; color:#64748b; margin-top:0.2rem;">4th-order Linkwitz-Riley crossover audio filter + note partitioning at C4 (MIDI 60).</p>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+          <div>
+            <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.3rem;">LOW REGISTER STEM NAME</label>
+            <input type="text" id="split-low-name" value="Guitar (Low / Bass)" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:#fff;">
+          </div>
+          <div>
+            <label style="font-size:0.75rem; color:#94a3b8; font-weight:bold; display:block; margin-bottom:0.3rem;">HIGH REGISTER STEM NAME</label>
+            <input type="text" id="split-high-name" value="Guitar (High / Chords)" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:#fff;">
+          </div>
+        </div>
+
+        <div id="split-status-box" style="display:none; padding:0.6rem; border-radius:4px; font-size:0.8rem;"></div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.6rem; margin-top:0.5rem;">
+          <button id="btn-execute-split" class="btn-primary" style="background:#e11d48;">✂️ EXECUTE LAYER SPLIT</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/app.js?v=2.4_chords_stt_voice"></script>
+</body>
+</html>
