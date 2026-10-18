@@ -1,6 +1,6 @@
 @echo off
 title REMIX DNA // Audio-to-MIDI & Multi-Genre Studio
-cd /d "d:\radio\remix_studio"
+cd /d "%~dp0"
 echo ===============================================================================
 echo   REMIX DNA // AUDIO-TO-MIDI & JUNGLE/TECHNO/HOUSE REMIX WORKSTATION
 echo ===============================================================================
@@ -10,5 +10,5 @@ echo   * Stems: Vocals, Guitar/Harmony, Bassline, Drums
 echo   * Voice Lab: Multi-Engine Evaluation Suite (Engines A, B, C, D)
 echo ===============================================================================
 echo.
-.venv\Scripts\python.exe server.py
+uv run python server.py
 pause
