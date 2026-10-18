@@ -56,7 +56,7 @@ items:
   - {id: T0-3, title: "Build the scorecard (scores 100 itself)", gate: g0, type: task, priority: must, area: scorecard,
      doc: scorecard.md#tracking-mechanism,
      body: "Registry, language packs, metric providers, scoring run, history tables, report with Q/E/score shown separately, GitHub sync, CI regression rule. First run stores the EN and LT baseline for every deliverable."}
-  - {id: T0-5, title: "Approved gold standards", gate: g0, type: task, priority: must, area: scorecard, langs: [en, lt], blocked_by: [D-6],
+  - {id: T0-5, title: "Approved gold standards", gate: g0, type: task, priority: must, area: scorecard, langs: [en, lt], blocked_by: [D-6, D-13],
      body: "- [ ] Approval records (author, approving musician, scope, checksum) for Grikiai, Virusas and Prie Topolio\n- [ ] Musicians mark each LT song's form route and improvised spans\n- [ ] One LT song timed fully by ear as the Lithuanian benchmark\n- [ ] First EN gold songs commissioned or sourced\n- [ ] One EN song timed fully by ear as the English benchmark"}
   - {id: T0-6, title: "STT tournament, English and Lithuanian", gate: g0, type: task, priority: must, area: voice, langs: [en, lt], blocked_by: [D-4],
      body: "Run cloud STT services, Whisper large-v3/turbo, faster-whisper and a Lithuanian-tuned model on gold lyrics; report WER per language and pick the stage-3 engines."}
@@ -97,6 +97,7 @@ items:
   - {id: D-4, title: "Which cloud STT and TTS services enter the first tournament, per language?", wayfinder: research, parent: MAP-0, gate: g0,
      body: "Shortlist services with English and Lithuanian support for sung and spoken audio: word timestamps, pricing, rate limits, terms. Output: the T0-6 tournament line-up."}
   - {id: D-6, title: "Who are the first approved musicians for English and Lithuanian, and how are they paid or credited?", wayfinder: task, parent: MAP-0, gate: g0}
+  - {id: D-13, title: "Who are the first approved musicians for English songs?", wayfinder: task, parent: MAP-0, gate: g0}
   - {id: D-5, title: "Sourcing: which sources switch on first, and what are the disk and cloud budgets?", wayfinder: grilling, parent: MAP-0, gate: g0, blocked_by: [D-4, D-12]}
   - {id: D-3, title: "Which built-in synth does matching target first, with which parameters?", wayfinder: research, parent: MAP-0, gate: g1, blocked_by: [D-1]}
   - {id: D-7, title: "Use tier D community sources (MuseScore, TAB sites), or only tiers A–C and E?", wayfinder: grilling, parent: MAP-0, gate: g1}
