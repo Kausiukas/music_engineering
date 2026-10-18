@@ -13,7 +13,7 @@ flowchart LR
     S["<b>Score</b><br/>0 to 100 per<br/>deliverable, language"]
     S --- Q["<b>Quality Q</b><br/>weighted mean, 0 to 1"]
     S --- E["<b>Evidence E</b><br/>approved proof, 0 to 1"]
-    S --- G["<b>Gates</b><br/>any failure caps at 39"]
+    S --- G["<b>Hard checks</b><br/>any failure caps at 39"]
     Q --- Q1["Accuracy vs approved gold · weight 50"]
     Q --- Q2["User acceptance walkthrough · weight 20"]
     Q --- Q3["Robustness on bad input · weight 15"]
@@ -26,7 +26,7 @@ flowchart LR
 ```
 
 $$
-\text{Score}(d, \ell) = \left\lfloor 100 \cdot Q(d, \ell) \cdot E(d, \ell) \right\rfloor, \quad \text{capped at } 39 \text{ if any gate fails}
+\text{Score}(d, \ell) = \left\lfloor 100 \cdot Q(d, \ell) \cdot E(d, \ell) \right\rfloor, \quad \text{capped at } 39 \text{ if any hard check fails}
 $$
 
 $$
@@ -39,7 +39,7 @@ $$
 
 Here *d* is the deliverable and ℓ the language (“any” for deliverables that don't depend on language). Each component *c* has a raw measurement *x*, a floor that scores 0, a target that scores 1, and a weight *w*. For lower-is-better metrics, such as word error rate, the floor is set above the target and the same formula works. *A* is the number of approved gold items measured, *U* the number of unapproved items, and *R* the number the deliverable needs.
 
-A deliverable reaches 100 only when every component is at or past its target, every required gold item is approved, and no gate fails. Better-than-target results don't raise the score above 100 or make up for a weak component elsewhere.
+A deliverable reaches 100 only when every component is at or past its target, every required gold item is approved, and no hard check fails. Better-than-target results don't raise the score above 100 or make up for a weak component elsewhere.
 
 ## Components
 
@@ -53,7 +53,7 @@ Each deliverable uses the components that apply to it. A missing component isn't
 | Performance | Speed and memory | Wall clock and peak VRAM against budget | 3× budget | At or under budget | 10 |
 | Consistency | Same input, same output | Share of reruns identical (cloud results replayed from cache) | 0% | 100% | 5 |
 
-**Gates** (no weight, but any failure caps the score at 39):
+**Hard checks** (no weight, but any failure caps the score at 39):
 
 - A crash or stack trace on valid input
 - True peak above −0.7 dBFS on any render
@@ -132,11 +132,11 @@ English and Lithuanian run as parallel tracks, and both are scored from the firs
 
 | Score | Band | Meaning |
 | --- | --- | --- |
-| 0–39 | Not trusted | A gate is failing, or there's too little quality or evidence to rely on |
+| 0–39 | Not trusted | A hard check is failing, or there's too little quality or evidence to rely on |
 | 40–69 | Developing | Works on some material; not to be relied on for real songs |
 | 70–89 | Usable | Reliable on most material; known gaps remain |
 | 90–99 | Release candidate | Meets nearly every target with approved evidence |
-| 100 | Done | Every component at target, full approved evidence, no gate failing |
+| 100 | Done | Every component at target, full approved evidence, no hard check failing |
 
 **Rules that keep the score honest**
 
@@ -213,7 +213,7 @@ The scorecard is code in `apps/remix_studio/scorecard/`, built in Phase 0 before
 | Language packs | `scorecard/languages/en.yaml`, `lt.yaml` | Normalisation, syllable rules, aligner and engine choices, required evidence |
 | Gold approvals | `approval.json` next to each gold item | Author, approving musician, date, scope, SHA-256 of the files |
 | Metric providers | One `measure()` per FR and family | Returns raw values per gold item; no scoring logic inside |
-| Scoring run | `uv run python -m scorecard run [--only FR-12] [--lang lt]` | Runs providers, applies gates, computes Q, E and score |
+| Scoring run | `uv run python -m scorecard run [--only FR-12] [--lang lt]` | Runs providers, applies hard checks, computes Q, E and score |
 | History | SQLite `data/remix/db/remix_studio.db`, tables `score_runs` and `scores` | One row per run, deliverable, language and component, with commit hash; never overwritten |
 | Walkthroughs | `scorecard/walkthroughs/<release>/<id>-<lang>.json` | Step results plus a link to the recording |
 | Report | `uv run python -m scorecard report` | Quality Q, evidence E and score, each shown separately, with change since last run and since `main`, language trust scores, and the weakest component of each deliverable |
