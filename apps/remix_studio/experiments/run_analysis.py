@@ -9,6 +9,8 @@ End-to-End Stem Analysis & Transcription Pipeline:
 """
 
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # apps/remix_studio
 import studio_paths
 import sys
 import json

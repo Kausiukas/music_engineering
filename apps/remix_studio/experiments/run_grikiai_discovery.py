@@ -1,11 +1,11 @@
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # apps/remix_studio
 import studio_paths
 import sys
 import time
 
 BASE_DIR = studio_paths.DATA_DIR
-if BASE_DIR not in sys.path:
-    sys.path.insert(0, BASE_DIR)
 
 from layer_discovery import run_6s_separation, compute_stem_metrics, INSTRUMENT_PROFILES
 

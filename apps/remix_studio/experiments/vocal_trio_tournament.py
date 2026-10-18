@@ -10,6 +10,8 @@ Computes objective metrics against the Sibelius Ground Truth via GoldStandardBen
 """
 
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # apps/remix_studio
 import studio_paths
 import sys
 import json
@@ -21,7 +23,7 @@ import librosa
 from scipy.signal import stft, istft
 
 # Add parent path for imports
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 

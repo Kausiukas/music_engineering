@@ -9,6 +9,8 @@ Supports side-by-side A/B testing of:
 
 import os
 import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # apps/remix_studio
+import sys
 import asyncio
 import numpy as np
 from audiocore.dsp import normalize_peak

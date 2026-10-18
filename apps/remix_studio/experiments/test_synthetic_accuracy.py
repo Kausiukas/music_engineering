@@ -8,6 +8,8 @@ Validates:
 """
 
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # apps/remix_studio
 import studio_paths
 import sys
 import json
@@ -17,7 +19,7 @@ import soundfile as sf
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 AUDIO_DIR = studio_paths.AUDIO_DIR
 sys.path.insert(0, BASE_DIR)
 

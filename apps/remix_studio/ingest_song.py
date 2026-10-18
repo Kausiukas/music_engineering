@@ -63,7 +63,7 @@ def run_command_streaming(cmd, task_id=None, task_mgr=None, prefix=""):
         raise RuntimeError(f"Command failed with exit code {returncode}: {' '.join(cmd)}")
     return returncode
 
-def ingest_audio(source_input, title=None, artist=None, remix_bpm=174.0, max_duration=90.0, task_id=None, task_mgr=None):
+def ingest_audio(source_input, title=None, artist=None, remix_bpm=174.0, max_duration=90.0, task_id=None, task_mgr=None, on_manifest_saved=None):
     def notify(stage, pct, msg, log_line=None):
         print(f"[{pct:>3}%] [{stage.upper()}] {msg}")
         if task_mgr and task_id:
@@ -232,13 +232,11 @@ def ingest_audio(source_input, title=None, artist=None, remix_bpm=174.0, max_dur
         
     notify("profiling", 78, f"Song manifest saved: {active_count} of {len(discovered_layers)} layers active.")
     
-    # Invalidate server waveform cache
-    try:
-        import server
-        if hasattr(server, 'WAVEFORM_CACHE'):
-            server.WAVEFORM_CACHE.clear()
-    except Exception:
-        pass
+    # Let the caller (the studio server) drop caches that refer to the previous song.
+    # (This used to `import server`, which loads a second copy of the module when the server runs
+    # as __main__, so the live cache was never cleared.)
+    if on_manifest_saved is not None:
+        on_manifest_saved()
         
     # Step 5: Vocal & Lyric Transcription (if vocal stem active)
     vocal_stem = stem_paths.get("vocals")

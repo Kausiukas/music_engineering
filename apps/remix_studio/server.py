@@ -564,7 +564,8 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                         artist=artist, 
                         remix_bpm=bpm,
                         task_id=task_id,
-                        task_mgr=ingest_manager
+                        task_mgr=ingest_manager,
+                        on_manifest_saved=WAVEFORM_CACHE.clear
                     )
                 except Exception as e:
                     import traceback
