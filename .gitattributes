@@ -1,0 +1,6 @@
+# Files ship to a Linux VPS from a Windows workstation: keep LF in the working tree too.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.png binary
+*.ico binary
+*.pdf binary
