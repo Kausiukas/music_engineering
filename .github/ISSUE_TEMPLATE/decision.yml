@@ -1,20 +1,23 @@
 name: Decision needed
-description: An open question that blocks work and must be recorded (ADR or plan PR).
+description: An open question that blocks work. It becomes a ticket on the "Open decisions" map.
 title: "[D-] "
-labels: ["type:decision"]
+labels: ["wayfinder:grilling"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        After creating it, make it a sub-issue of the **Open decisions** map (`wayfinder:map`) and set its type label:
+        `wayfinder:research`, `wayfinder:prototype`, `wayfinder:grilling` or `wayfinder:task`. Add it to
+        `docs/plan/backlog.yaml` in the next plan PR so the backlog stays the source.
   - type: textarea
     id: question
     attributes:
       label: Question
+      description: Phrased so its answer is a decision
     validations:
       required: true
-  - type: textarea
-    id: options
-    attributes:
-      label: Options and trade-offs
   - type: input
     id: blocks
     attributes:
       label: Blocks
-      description: Deliverables that wait on this (issue numbers)
+      description: Deliverables or tickets that wait on this (issue numbers); wire them as native "blocked by" links

@@ -43,7 +43,8 @@ CLASSIC_SAMPLES_DIR = os.path.join(SHARED_DIR, "classic_samples") if SHARED_DIR 
 def resolve_data_path(rel_path):
     """Map an API-relative path (``audio/stems/x.wav``) into DATA_DIR, refusing anything that escapes it."""
     root = os.path.realpath(DATA_DIR)
-    target = os.path.realpath(os.path.join(root, rel_path))
+    # Backslashes are separators on every OS, so `..\..\x` can't slip past the check on Linux.
+    target = os.path.realpath(os.path.join(root, rel_path.replace("\\", "/")))
     if os.path.commonpath([root, target]) != root or target == root:
         return None
     return target

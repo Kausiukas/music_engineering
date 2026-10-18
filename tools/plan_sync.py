@@ -76,7 +76,7 @@ def pick(rows, key, column):
 
 def build_issue(item, rows, milestones):
     iid = item["id"]
-    ui = re.match(r"^[UVRM]\d+$", iid)
+    ui = re.match(r"^[UVRM]\d+$", iid) and not item.get("wayfinder")
     kind = "user-action" if ui else item.get("type", "task")
     sections, title, priority, agreement = [], item.get("title"), item.get("priority"), None
 
@@ -108,6 +108,15 @@ def build_issue(item, rows, milestones):
             f"**Done when** ([plan](../blob/main/docs/plan/{row['_doc']}#{row['_anchor']}))\n\n- [ ] {row['Done when']}\n\n"
             "Accepted by a recorded walkthrough on two songs per language (DoD walkthrough rules)."
         )
+    elif item.get("wayfinder"):
+        # Decision map conventions (/wayfinder): the map body is the index; a ticket body is its question.
+        sections.append(item["body"].strip() if item["wayfinder"] == "map" else f"## Question\n\n{title}")
+        if item["wayfinder"] != "map" and item.get("body"):
+            sections.append(item["body"])
+        gate = milestones[int(item["gate"][1])]["title"]
+        return {"id": iid, "title": f"[{iid}] {title}", "body": "\n\n".join(sections),
+                "labels": [f"wayfinder:{item['wayfinder']}"], "milestone": gate, "skip": False,
+                "parent": item.get("parent"), "blocked_by": item.get("blocked_by", [])}
     else:
         if item.get("body"):
             sections.append(item["body"])
@@ -128,7 +137,8 @@ def build_issue(item, rows, milestones):
         labels.append(f"agreement:{agreement}")
     gate = milestones[int(item["gate"][1])]["title"]
     return {"id": iid, "title": f"[{iid}] {title}", "body": "\n\n".join(sections), "labels": labels,
-            "milestone": gate, "skip": agreement == "cut"}
+            "milestone": gate, "skip": agreement == "cut", "parent": item.get("parent"),
+            "blocked_by": item.get("blocked_by", [])}
 
 
 def ensure_labels(repo, labels, dry):
@@ -154,10 +164,12 @@ def ensure_milestones(repo, milestones, dry):
 def ensure_issues(repo, issues, dry):
     existing = json.loads(gh("issue", "list", "-R", repo, "--state", "all", "--limit", "1000", "--json", "number,title"))
     by_id = {m.group(1): i["number"] for i in existing if (m := re.match(r"^\[([^\]]+)\]", i["title"]))}
+    created = []
     for issue in issues:
         if issue["skip"] or issue["id"] in by_id:
             continue
-        print(f"issue    + {issue['title']}  ({issue['milestone']}; {', '.join(issue['labels'])})")
+        parent = f"; sub-issue of {issue['parent']}" if issue["parent"] else ""
+        print(f"issue    + {issue['title']}  ({issue['milestone']}; {', '.join(issue['labels'])}{parent})")
         if dry:
             continue
         with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as f:
@@ -165,9 +177,18 @@ def ensure_issues(repo, issues, dry):
         args = ["issue", "create", "-R", repo, "--title", issue["title"], "--body-file", f.name, "--milestone", issue["milestone"]]
         for label in issue["labels"]:
             args += ["--label", label]
+        if issue["parent"]:
+            args += ["--parent", str(by_id[issue["parent"]])]
         url = gh(*args).strip()
         by_id[issue["id"]] = int(url.rsplit("/", 1)[1])
+        created.append(issue)
         Path(f.name).unlink()
+    # Second pass: blocking edges need both ends to exist (native GitHub issue dependencies).
+    for issue in created:
+        if issue["blocked_by"]:
+            blockers = ",".join(str(by_id[b]) for b in issue["blocked_by"])
+            print(f"blocked  # {issue['id']} by {', '.join(issue['blocked_by'])}")
+            gh("issue", "edit", str(by_id[issue["id"]]), "-R", repo, "--add-blocked-by", blockers)
     return by_id
 
 
@@ -214,8 +235,17 @@ def main():
             issues.append(build_issue(item, rows, backlog["milestones"]))
         except (KeyError, TypeError) as exc:
             missing.append(f"{item['id']}: no matching plan row ({exc})")
+    ids = [item["id"] for item in backlog["items"]]
+    for item in backlog["items"]:
+        for ref in [item.get("parent")] + item.get("blocked_by", []):
+            if ref and ref not in ids:
+                missing.append(f"{item['id']}: refers to unknown item {ref}")
+        if item.get("parent") and ids.index(item["parent"]) > ids.index(item["id"]):
+            missing.append(f"{item['id']}: parent {item['parent']} must come earlier in backlog.yaml")
+    if len(ids) != len(set(ids)):
+        missing.append("duplicate IDs in backlog.yaml")
     if missing:
-        raise SystemExit("Backlog items without a plan row:\n" + "\n".join(missing))
+        raise SystemExit("Backlog problems:\n" + "\n".join(missing))
 
     if args.offline:
         for issue in issues:

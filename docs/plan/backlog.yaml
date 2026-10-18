@@ -17,7 +17,6 @@ labels:
   type:user-action:  {color: "0e8a16", description: "Something the user can do; accepted by walkthrough"}
   type:family:       {color: "5319e7", description: "Instrument family transcription + notation"}
   type:task:         {color: "c5def5", description: "Enabling work item"}
-  type:decision:     {color: "d93f0b", description: "Open question that needs a recorded decision (ADR or plan PR)"}
   area:ingest:       {color: "fbca04", description: ""}
   area:separation:   {color: "fbca04", description: ""}
   area:transcription: {color: "fbca04", description: "Pitch, notes, notation"}
@@ -37,6 +36,15 @@ labels:
   agreement:proposed: {color: "ededed", description: "Row not yet agreed in the plan"}
   agreement:agreed:  {color: "0e8a16", description: "Row agreed in the plan"}
   agreement:changed: {color: "fef2c0", description: "Row changed and agreed in the plan"}
+  # Tickets (sub-issues sliced by /to-tickets) carry these; deliverable issues never do.
+  ready-for-agent:   {color: "0e8a16", description: "Ticket fully specified; an agent can implement it AFK"}
+  ready-for-human:   {color: "fbca04", description: "Ticket needs a person (judgement, listening, hardware, accounts)"}
+  # Decision map (/wayfinder). Map and its tickets carry only these labels.
+  wayfinder:map:       {color: "5319e7", description: "The decision map; open decisions are its sub-issues"}
+  wayfinder:research:  {color: "c2e0c6", description: "Decision ticket resolved by reading sources (AFK)"}
+  wayfinder:prototype: {color: "c2e0c6", description: "Decision ticket resolved with a rough artifact to react to"}
+  wayfinder:grilling:  {color: "c2e0c6", description: "Decision ticket resolved in conversation"}
+  wayfinder:task:      {color: "c2e0c6", description: "Work that must happen before a decision can be made"}
 
 # Shorthand used below: g0..g3 = milestones in order.
 items:
@@ -48,26 +56,53 @@ items:
   - {id: T0-3, title: "Build the scorecard (scores 100 itself)", gate: g0, type: task, priority: must, area: scorecard,
      doc: scorecard.md#tracking-mechanism,
      body: "Registry, language packs, metric providers, scoring run, history tables, report with Q/E/score shown separately, GitHub sync, CI regression rule. First run stores the EN and LT baseline for every deliverable."}
-  - {id: T0-4, title: "SoundCraft spike", gate: g0, type: task, priority: must, area: session,
-     body: "Build SoundCraft v0.7.0 and report every command the PRD relies on (markers.add, batch keep_going, instrument slots, MCP roots) as works / missing / broken."}
-  - {id: T0-5, title: "Approved gold standards", gate: g0, type: task, priority: must, area: scorecard, langs: [en, lt],
+  - {id: T0-5, title: "Approved gold standards", gate: g0, type: task, priority: must, area: scorecard, langs: [en, lt], blocked_by: [D-6],
      body: "- [ ] Approval records (author, approving musician, scope, checksum) for Grikiai, Virusas and Prie Topolio\n- [ ] Musicians mark each LT song's form route and improvised spans\n- [ ] One LT song timed fully by ear as the Lithuanian benchmark\n- [ ] First EN gold songs commissioned or sourced\n- [ ] One EN song timed fully by ear as the English benchmark"}
-  - {id: T0-6, title: "STT tournament, English and Lithuanian", gate: g0, type: task, priority: must, area: voice, langs: [en, lt],
+  - {id: T0-6, title: "STT tournament, English and Lithuanian", gate: g0, type: task, priority: must, area: voice, langs: [en, lt], blocked_by: [D-4],
      body: "Run cloud STT services, Whisper large-v3/turbo, faster-whisper and a Lithuanian-tuned model on gold lyrics; report WER per language and pick the stage-3 engines."}
 
-  # --- Decisions --------------------------------------------------------------------------
-  - {id: D-1, title: "Host: SoundCraft or Python studio + web UI", gate: g0, type: decision, priority: must, area: session,
-     body: "Decided from the T0-4 spike; recorded as an ADR in docs/adr/."}
-  - {id: D-2, title: "UI path: native egui panel (A) or browser hybrid with OSMD (B)", gate: g0, type: decision, priority: should, area: ui}
-  - {id: D-3, title: "First built-in synth for matching and its parameter list", gate: g1, type: decision, priority: should, area: synth}
-  - {id: D-4, title: "Cloud STT and TTS services for the first tournament", gate: g0, type: decision, priority: must, area: voice}
-  - {id: D-5, title: "Sourcing: which sources first; disk and cloud budgets", gate: g0, type: decision, priority: must, area: sourcing,
-     doc: sourcing.md#open-questions}
-  - {id: D-6, title: "First approved musicians for EN and LT; payment or credit", gate: g0, type: decision, priority: must, area: sourcing}
-  - {id: D-7, title: "Use tier D community sources (MuseScore, TAB sites) or not", gate: g1, type: decision, priority: should, area: sourcing}
-  - {id: D-8, title: "Lithuanian archives: access and terms", gate: g1, type: decision, priority: should, area: sourcing, langs: [lt]}
-  - {id: D-9, title: "Smallest exportable loop unit (chord span, bar or phrase)", gate: g3, type: decision, priority: should, area: alignment}
-  - {id: D-10, title: "Mix limits: tempo stretch and transposition", gate: g3, type: decision, priority: could, area: alignment}
+  # --- Decision map (/wayfinder) ----------------------------------------------------------
+  # The map and its tickets carry only wayfinder:* labels. Tickets are sub-issues of MAP-0;
+  # blocked_by edges are wired after creation. Resolve one ticket per session.
+  - id: MAP-0
+    title: "Open decisions: from Phase 0 to v1"
+    wayfinder: map
+    gate: g0
+    body: |
+      ## Destination
+
+      Every question the plan leaves open is decided and recorded (an ADR for hard-to-reverse choices, a plan PR otherwise), so each gate's deliverables can be sliced into tickets without waiting on a decision.
+
+      ## Notes
+
+      Domain: audio reverse engineering; read GLOSSARY.md and docs/plan/. Grilling tickets call the grilling and domain-modeling skills; research tickets call research and write their findings under docs/research/. A host decision closes with an ADR in docs/adr/. English and Lithuanian are parallel tracks: a decision that differs per language says so.
+
+      ## Decisions so far
+
+      ## Not yet specified
+
+      - Which separation checkpoints fit in 6 GB VRAM (sharpens after the host decision and CUDA setup).
+      - Scorecard component floors and targets per deliverable (sharpens at the Gate 0 baseline run).
+
+      ## Out of scope
+
+      - Generative music (DiffSynth-Studio, ACE-Step), external VST3/AU hosting, AGPL code, and the radio app: see the PRD non-goals.
+  - {id: D-11, title: "Which of the brief's SoundCraft claims hold in the real repo?", wayfinder: research, parent: MAP-0, gate: g0,
+     body: "Check every SoundCraft command, crate, PR and issue the PRD relies on (markers.add, batch keep_going, instrument slots, MCP read/write roots, track presets, export) against the upstream repo and its v0.7.0 release. Record each as confirmed / different / missing, with links."}
+  - {id: T0-4, title: "SoundCraft spike: build v0.7.0 and drive it headless", wayfinder: prototype, parent: MAP-0, gate: g0, blocked_by: [D-11],
+     body: "Build SoundCraft v0.7.0 on the workstation, open a stem folder headless over CLI/MCP, and report every command the PRD relies on as works / missing / broken. The artifact is a short spike report, linked here."}
+  - {id: D-1, title: "Host: SoundCraft or the Python studio plus a web UI?", wayfinder: grilling, parent: MAP-0, gate: g0, blocked_by: [D-11, T0-4],
+     body: "Decide the host from the research and the spike. Record the decision as an ADR in docs/adr/."}
+  - {id: D-2, title: "UI path: native egui panel or browser hybrid with OSMD?", wayfinder: grilling, parent: MAP-0, gate: g0, blocked_by: [D-1]}
+  - {id: D-4, title: "Which cloud STT and TTS services enter the first tournament, per language?", wayfinder: research, parent: MAP-0, gate: g0,
+     body: "Shortlist services with English and Lithuanian support for sung and spoken audio: word timestamps, pricing, rate limits, terms. Output: the T0-6 tournament line-up."}
+  - {id: D-6, title: "Who are the first approved musicians for English and Lithuanian, and how are they paid or credited?", wayfinder: task, parent: MAP-0, gate: g0}
+  - {id: D-5, title: "Sourcing: which sources switch on first, and what are the disk and cloud budgets?", wayfinder: grilling, parent: MAP-0, gate: g0, blocked_by: [D-4]}
+  - {id: D-3, title: "Which built-in synth does matching target first, with which parameters?", wayfinder: research, parent: MAP-0, gate: g1, blocked_by: [D-1]}
+  - {id: D-7, title: "Use tier D community sources (MuseScore, TAB sites), or only tiers A–C and E?", wayfinder: grilling, parent: MAP-0, gate: g1}
+  - {id: D-8, title: "Which Lithuanian archives give access, and on what terms?", wayfinder: research, parent: MAP-0, gate: g1}
+  - {id: D-9, title: "What is the smallest exportable loop unit: chord span, bar or phrase?", wayfinder: prototype, parent: MAP-0, gate: g3}
+  - {id: D-10, title: "Mix limits: how far can tempo stretch and transposition go for this music?", wayfinder: prototype, parent: MAP-0, gate: g3}
 
   # --- Requirements (criteria read from prd.md and dod.md) --------------------------------
   - {id: FR-1,  gate: g1, type: requirement, priority: must, area: ingest}
@@ -75,9 +110,9 @@ items:
   - {id: FR-3,  gate: g1, type: requirement, priority: must, area: transcription}
   - {id: FR-4,  gate: g1, type: requirement, priority: must, area: transcription}
   - {id: FR-5,  gate: g2, type: requirement, priority: should, area: alignment}
-  - {id: FR-6,  gate: g3, type: requirement, priority: should, area: synth}
-  - {id: FR-7,  gate: g2, type: requirement, priority: must, area: session}
-  - {id: FR-8,  gate: g3, type: requirement, priority: should, area: ui}
+  - {id: FR-6,  gate: g3, type: requirement, priority: should, area: synth, blocked_by: [D-3]}
+  - {id: FR-7,  gate: g2, type: requirement, priority: must, area: session, blocked_by: [D-1]}
+  - {id: FR-8,  gate: g3, type: requirement, priority: should, area: ui, blocked_by: [D-2]}
   - {id: FR-9,  gate: g1, type: requirement, priority: must, area: scorecard}
   - {id: FR-10, gate: g1, type: requirement, priority: must, area: infra}
   - {id: FR-11, gate: g1, type: requirement, priority: must, area: transcription}
@@ -85,10 +120,10 @@ items:
   - {id: FR-13, gate: g3, type: requirement, priority: must, area: voice, langs: [en, lt]}
   - {id: FR-14, gate: g3, type: requirement, priority: should, area: voice, langs: [en, lt]}
   - {id: FR-15, gate: g0, type: requirement, priority: must, area: scorecard}
-  - {id: FR-16, gate: g1, type: requirement, priority: must, area: sourcing, langs: [en, lt]}
+  - {id: FR-16, gate: g1, type: requirement, priority: must, area: sourcing, langs: [en, lt], blocked_by: [D-5]}
   - {id: FR-17, gate: g1, type: requirement, priority: must, area: alignment}
   - {id: FR-18, gate: g1, type: requirement, priority: must, area: alignment}
-  - {id: FR-19, gate: g3, type: requirement, priority: should, area: alignment}
+  - {id: FR-19, gate: g3, type: requirement, priority: should, area: alignment, blocked_by: [D-9, D-10]}
 
   # --- Instrument families (criteria read from dod.md) ------------------------------------
   - {id: F-piano,  family: "Piano / keys",     gate: g1, type: family, priority: must, area: transcription}

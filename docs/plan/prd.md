@@ -183,7 +183,7 @@ Phase 1 is worth doing whatever the host decision is. Phase 2 has a fallback, so
 | Grading the app against its own timing | Timing scores look better than they are | Below bar level only songs timed by ear count fully; gold never made with the app's aligner ([alignment.md](alignment.md)) |
 | Upstream trademark terms | Fork distribution violates `LICENSE-brand.txt` | Strip branding before any shared build |
 
-**Open questions** (each is tracked as a GitHub issue labelled `decision`)
+**Open questions** (each is a ticket on the *Open decisions* map issue, resolved one per session with `/wayfinder`)
 
 - [ ] Adopt SoundCraft as host, or keep the Python studio plus a web UI and add a DAW later? (Decided at the end of Phase 0)
 - [ ] Native egui panel (Path A) or browser hybrid with OSMD (Path B)?
