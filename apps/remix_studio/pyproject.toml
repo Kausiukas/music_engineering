@@ -1,0 +1,50 @@
+[project]
+name = "remix-studio"
+version = "0.1.0"
+description = "Remix DNA studio: audio -> stems -> MIDI/score -> synthetic recreation and genre remixes"
+requires-python = ">=3.12"
+dependencies = [
+    "audiocore[tts]",
+    "torch>=2.14",
+    "torchaudio>=2.11",
+    "demucs>=4.1",
+    "openai-whisper>=20250625",
+    "librosa>=1.0",
+    "numpy>=2.5",
+    "scipy>=1.18",
+    "soundfile>=0.14",
+    "edge-tts>=7.3",
+    "mido>=1.3",
+    "music21>=10.5",
+]
+
+[project.optional-dependencies]
+# gold_standard_parser.py (score PDF -> gold-standard JSON)
+pdf = ["pymupdf>=1.24"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+package = false
+# Workstation is Windows, any future render box is Linux; macOS wheels conflict (demucs pins numpy<2 there).
+environments = ["sys_platform == 'win32'", "sys_platform == 'linux'"]
+
+[tool.uv.sources]
+audiocore = { path = "../../packages/audiocore", editable = true }
+# CPU wheels, matching the existing environment (no CUDA on this workstation).
+torch = { index = "pytorch-cpu" }
+torchaudio = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "artifact: asserts on generated recreations/DB under data/remix (run after the pipeline)",
+    "slow: loads Whisper/Demucs models",
+]

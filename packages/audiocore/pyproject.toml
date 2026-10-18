@@ -1,0 +1,21 @@
+[project]
+name = "audiocore"
+version = "0.1.0"
+description = "Shared audio DSP, pitch/theory, synthesis and I/O helpers for the radio and remix_studio apps"
+requires-python = ">=3.12"
+# Keep this light: the radio VPS runs under MemoryMax=512M. Never add torch/demucs/whisper here.
+dependencies = [
+    "numpy>=2.0",
+    "scipy>=1.15",
+    "soundfile>=0.13",
+]
+
+[project.optional-dependencies]
+tts = ["edge-tts>=7.0"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["uv_build>=0.8,<0.12"]
+build-backend = "uv_build"
