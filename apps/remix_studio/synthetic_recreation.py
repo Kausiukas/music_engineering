@@ -8,12 +8,10 @@ import os
 import sys
 import json
 import numpy as np
+from audiocore.dsp import limit_peak
+from audiocore.pitch import midi_to_hz
 import soundfile as sf
 import librosa
-
-def midi_to_hz(midi_note):
-    """Converts fractional MIDI note to frequency in Hz."""
-    return 440.0 * (2.0 ** ((midi_note - 69.0) / 12.0))
 
 def synthesize_continuous_pitch_stem(curve_data, sr=22050, duration_sec=None, instrument="acoustic_guitar", transpose_semitones=0):
     """
@@ -82,9 +80,7 @@ def synthesize_continuous_pitch_stem(curve_data, sr=22050, duration_sec=None, in
     audio *= interp_energy
     
     # Soft knee limiting & normalization
-    max_val = np.max(np.abs(audio))
-    if max_val > 0.92:
-        audio = (audio / max_val) * 0.92
+    audio = limit_peak(audio)
         
     return audio
 
@@ -159,9 +155,7 @@ def synthesize_polyphonic_notes(notes, sr=22050, duration_sec=None, instrument="
         audio[start_sample:end_sample] += note_audio
         
     # Soft knee limiting
-    max_val = np.max(np.abs(audio))
-    if max_val > 0.92:
-        audio = (audio / max_val) * 0.92
+    audio = limit_peak(audio)
         
     return audio
 
@@ -268,9 +262,7 @@ def recreate_full_synthetic_song(manifest_path, audio_dir, out_master_path, tran
         master_mix[:len(audio)] += (audio * gain)
         
     # Master soft peak limiting (ECC Zero-Clipping Rule <= -0.7 dBFS)
-    master_peak = np.max(np.abs(master_mix))
-    if master_peak > 0.92:
-        master_mix = (master_mix / master_peak) * 0.92
+    master_mix = limit_peak(master_mix)
         
     sf.write(out_master_path, master_mix, sr)
     return out_master_path, len(layer_audios)

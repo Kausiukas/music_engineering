@@ -10,11 +10,9 @@ Replaces crude mathematical sine waves with physically grounded acoustic instrum
 import os
 import sys
 import numpy as np
+from audiocore.pitch import midi_to_hz
 import scipy.signal as signal
 import soundfile as sf
-
-def midi_to_hz(midi_note):
-    return 440.0 * (2.0 ** ((midi_note - 69.0) / 12.0))
 
 # -----------------------------------------------------------------------------
 # 1. Physical Modeling: Karplus-Strong Acoustic Guitar with Body Resonance

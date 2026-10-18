@@ -15,6 +15,8 @@ import json
 import time
 from typing import Dict, List, Any, Tuple, Optional
 import numpy as np
+from audiocore.dsp import normalize_peak
+from audiocore.pitch import midi_to_hz
 import soundfile as sf
 import librosa
 
@@ -81,10 +83,6 @@ class TrioSyntheticRecreator:
     def __init__(self, sample_rate: int = 44100):
         self.sr = sample_rate
 
-    @staticmethod
-    def midi_to_hz(midi: float) -> float:
-        return 440.0 * (2.0 ** ((midi - 69.0) / 12.0))
-
     def synthesize_vocal_line(
         self,
         notes: List[Dict[str, Any]],
@@ -110,7 +108,7 @@ class TrioSyntheticRecreator:
             step_dur = duration_sec / max(1, n_count)
             for i, note_obj in enumerate(notes):
                 pitch = note_obj.get('midi_pitch', 67) + transpose_semitones
-                f0 = self.midi_to_hz(pitch)
+                f0 = midi_to_hz(pitch)
                 st = i * step_dur
                 en = st + step_dur * 0.92  # slight articulation gap
 
@@ -151,9 +149,7 @@ class TrioSyntheticRecreator:
         mono *= amp_track
 
         # Normalize to prevent clipping
-        peak = np.max(np.abs(mono))
-        if peak > 0.0:
-            mono = mono * (0.85 / peak)
+        mono = normalize_peak(mono, 0.85)
 
         # Apply Stereo Panning: panning in [-1.0, 1.0]
         # Equal-power panning law
@@ -199,7 +195,7 @@ class TrioSyntheticRecreator:
                     continue
 
                 for string_idx, pitch in enumerate(voicing):
-                    f_hz = self.midi_to_hz(pitch + transpose_semitones)
+                    f_hz = midi_to_hz(pitch + transpose_semitones)
                     delay_samples = int(round(self.sr / f_hz))
                     pluck_time = strum_time + (string_idx * 0.015)  # Strum delay
                     i_start = int(round(pluck_time * self.sr))
@@ -221,7 +217,7 @@ class TrioSyntheticRecreator:
                 b_time = m * sec_per_measure + beat_offset * sec_per_beat
                 if b_time >= duration_sec:
                     continue
-                f_bass = self.midi_to_hz(root_pitch + transpose_semitones)
+                f_bass = midi_to_hz(root_pitch + transpose_semitones)
                 i_st = int(round(b_time * self.sr))
                 dur_s = int(round(sec_per_beat * 1.5 * self.sr))
                 i_en = min(i_st + dur_s, n_samples)

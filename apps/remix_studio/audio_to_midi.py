@@ -11,15 +11,6 @@ import librosa
 import mido
 from mido import Message, MidiFile, MidiTrack, MetaMessage
 
-def hz_to_midi_note(hz):
-    """Converts frequency in Hz to closest MIDI note number and cents deviation."""
-    if hz is None or hz <= 0:
-        return None, 0
-    midi_num = 69.0 + 12.0 * np.log2(hz / 440.0)
-    nearest_note = int(round(midi_num))
-    cents = int(round((midi_num - nearest_note) * 100))
-    return nearest_note, cents
-
 def midi_note_to_name(note_num):
     """Converts MIDI note number to note name like C4, A#3."""
     names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']

@@ -12,21 +12,12 @@ import sys
 import json
 import asyncio
 import numpy as np
+from audiocore.tts import save_speech
 import soundfile as sf
 import librosa
 from scipy.signal import butter, sosfilt
 
 SR = 22050
-
-def hz_to_midi(freq):
-    if freq is None or freq <= 0:
-        return 60
-    return int(round(69.0 + 12.0 * np.log2(freq / 440.0)))
-
-async def _synthesize_edge_async(text, voice, out_mp3):
-    import edge_tts
-    comm = edge_tts.Communicate(text, voice)
-    await comm.save(out_mp3)
 
 def synthesize_aligned_singing_track(lyrics_json_path, notes_json_path, out_wav_path, total_duration_sec=90.0, voice="lt-LT-LeonasNeural", transpose_semitones=0, sr=SR):
     """
@@ -86,7 +77,7 @@ def synthesize_aligned_singing_track(lyrics_json_path, notes_json_path, out_wav_
         
         try:
             # A. Synthesize phrase via Edge-TTS
-            asyncio.run(_synthesize_edge_async(phrase_text, voice, temp_mp3))
+            asyncio.run(save_speech(phrase_text, voice, temp_mp3))
             
             # Convert to 22.05kHz mono WAV
             subprocess.run(

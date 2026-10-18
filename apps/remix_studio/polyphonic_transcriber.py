@@ -11,23 +11,11 @@ import os
 import sys
 import json
 import numpy as np
+from audiocore.pitch import KEY_NAMES, hz_to_midi, midi_to_hz, midi_to_name
 import librosa
 
-def midi_to_hz(midi_note):
-    return 440.0 * (2.0 ** ((midi_note - 69.0) / 12.0))
-
-def hz_to_midi(freq):
-    if freq is None or freq <= 0:
-        return 0
-    return int(round(69.0 + 12.0 * np.log2(freq / 440.0)))
-
-def midi_to_name(note_num):
-    names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-    octave = (note_num // 12) - 1
-    return f"{names[note_num % 12]}{octave}"
-
 # 24 Standard Major and Minor Chord Templates
-NOTE_NAMES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
+NOTE_NAMES = KEY_NAMES
 CHORD_TEMPLATES = {}
 for idx, name in enumerate(NOTE_NAMES):
     # Major triad
@@ -154,7 +142,7 @@ def transcribe_polyphonic_stem(audio_path, sr=22050, hop_length=256, instrument_
             val = spectrum_norm[b]
             if val > threshold and val > spectrum_norm[b-1] and val > spectrum_norm[b+1] and val > spectrum_norm[b-2] and val > spectrum_norm[b+2]:
                 freq = cqt_freqs[b]
-                midi_p = hz_to_midi(freq)
+                midi_p = hz_to_midi(freq, default=0)
                 if 28 <= midi_p <= 96:
                     candidate_peaks.append({
                         "bin": b,
@@ -188,7 +176,7 @@ def transcribe_polyphonic_stem(audio_path, sr=22050, hop_length=256, instrument_
         if not clean_peaks and np.max(spectrum_norm) > 0.03:
             best_b = np.argmax(spectrum_norm)
             freq = cqt_freqs[best_b]
-            midi_p = hz_to_midi(freq)
+            midi_p = hz_to_midi(freq, default=0)
             if 28 <= midi_p <= 96:
                 clean_peaks.append({"bin": best_b, "freq": freq, "midi": midi_p, "energy": spectrum_norm[best_b]})
                 

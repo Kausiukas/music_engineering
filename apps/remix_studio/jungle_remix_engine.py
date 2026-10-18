@@ -12,6 +12,7 @@ import os
 import studio_paths
 import sys
 import numpy as np
+from audiocore.dsp import normalize_peak
 import soundfile as sf
 import librosa
 from scipy.signal import butter, sosfilt
@@ -38,9 +39,7 @@ def _synthesize_reese_bass(freq, duration_sec, sr=SR):
     reese = 0.5 * (saw1 + saw2)
     sos = butter(4, 300, btype='lowpass', fs=sr, output='sos')
     reese = sosfilt(sos, reese)
-    peak = np.max(np.abs(reese))
-    if peak > 0:
-        reese = reese / peak
+    reese = normalize_peak(reese)
     return reese
 
 def render_jungle_remix(
@@ -237,9 +236,7 @@ def render_jungle_remix(
     master_mix += vocal_layer
     
     # Normalize with headroom
-    peak = np.max(np.abs(master_mix))
-    if peak > 0:
-        master_mix = master_mix * (0.89 / peak)
+    master_mix = normalize_peak(master_mix, 0.89)
         
     sf.write(output_path, master_mix, SR)
     

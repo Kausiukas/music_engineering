@@ -11,6 +11,8 @@ import os
 import sys
 import asyncio
 import numpy as np
+from audiocore.dsp import normalize_peak
+from audiocore.tts import save_speech
 import soundfile as sf
 import librosa
 from scipy.signal import butter, sosfilt
@@ -62,9 +64,7 @@ def run_engine_a_stem_rack(vocal_stem_path, output_path, bpm=174, hpf_hz=160, du
     y = _apply_dub_delay(y, sr, bpm=bpm, delay_beats=0.75, feedback=0.42, wet=dub_wet)
     
     # 4. Master True-Peak Normalization (-1.0 dBFS)
-    peak = np.max(np.abs(y))
-    if peak > 0:
-        y = y * (0.89 / peak)
+    y = normalize_peak(y, 0.89)
         
     sf.write(output_path, y, sr)
     return output_path
@@ -86,9 +86,7 @@ def run_engine_b_timbre_pitch_shift(vocal_stem_path, output_path, n_steps=0, bpm
     y = sosfilt(sos, y)
     y = _apply_tape_saturation(y, drive=1.2)
     
-    peak = np.max(np.abs(y))
-    if peak > 0:
-        y = y * (0.89 / peak)
+    y = normalize_peak(y, 0.89)
         
     sf.write(output_path, y, sr)
     return output_path
@@ -96,11 +94,6 @@ def run_engine_b_timbre_pitch_shift(vocal_stem_path, output_path, n_steps=0, bpm
 # -----------------------------------------------------------------------------
 # ENGINE C: Neural Lyric Re-Synthesis (Edge-TTS)
 # -----------------------------------------------------------------------------
-async def _synthesize_edge_async(text, voice, rate, pitch, out_mp3):
-    import edge_tts
-    comm = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch)
-    await comm.save(out_mp3)
-
 def run_engine_c_neural_speech(text, output_path, voice="lt-LT-LeonasNeural", rate="+0%", pitch="+0Hz", bpm=174):
     """
     Synthesizes lyrics into music-aligned neural singing vocals using Lithuanian & multilingual neural voices.
@@ -123,7 +116,7 @@ def run_engine_c_neural_speech(text, output_path, voice="lt-LT-LeonasNeural", ra
 
     temp_mp3 = output_path.replace(".wav", "_temp.mp3")
     try:
-        asyncio.run(_synthesize_edge_async(text, voice, rate, pitch, temp_mp3))
+        asyncio.run(save_speech(text, voice, temp_mp3, rate=rate, pitch=pitch))
         subprocess.run(
             ['ffmpeg', '-i', temp_mp3, '-ar', str(SR), '-ac', '1', output_path, '-y'],
             capture_output=True,
@@ -167,9 +160,7 @@ def run_engine_d_hybrid(vocal_stem_path, text, output_path, bpm=174, n_steps=0):
     else:
         y = y_a
         
-    peak = np.max(np.abs(y))
-    if peak > 0:
-        y = y * (0.89 / peak)
+    y = normalize_peak(y, 0.89)
         
     sf.write(output_path, y, sr)
     

@@ -16,6 +16,7 @@ import os
 import studio_paths
 import sys
 import numpy as np
+from audiocore.dsp import normalize_peak
 import soundfile as sf
 import librosa
 from scipy.signal import butter, sosfilt
@@ -45,9 +46,7 @@ def _synthesize_303_acid(freq, duration_sec, cutoff=1200, resonance=0.7, sr=SR):
     b, a = butter(2, 600 / (sr / 2), btype='low')
     acid = sosfilt(butter(2, 800, btype='lowpass', fs=sr, output='sos'), saw)
     acid = np.tanh(acid * 2.2) # Drive/Distortion
-    peak = np.max(np.abs(acid))
-    if peak > 0:
-        acid = acid / peak
+    acid = normalize_peak(acid)
     return acid
 
 def _synthesize_organ_chord(chord_name, duration_sec, sr=SR):
@@ -69,9 +68,7 @@ def _synthesize_organ_chord(chord_name, duration_sec, sr=SR):
     # Fast percussive decay
     env = np.exp(-t * 6.5)
     chord_sig = chord_sig * env
-    peak = np.max(np.abs(chord_sig))
-    if peak > 0:
-        chord_sig = chord_sig / peak
+    chord_sig = normalize_peak(chord_sig)
     return chord_sig
 
 def render_techno_remix(
@@ -189,9 +186,7 @@ def render_techno_remix(
     master_mix += bass_layer
     master_mix += vocal_layer
 
-    peak = np.max(np.abs(master_mix))
-    if peak > 0:
-        master_mix = master_mix * (0.88 / peak)
+    master_mix = normalize_peak(master_mix, 0.88)
 
     sf.write(output_path, master_mix, SR)
 
@@ -327,9 +322,7 @@ def render_house_remix(
     master_mix += chord_layer
     master_mix += vocal_layer
 
-    peak = np.max(np.abs(master_mix))
-    if peak > 0:
-        master_mix = master_mix * (0.88 / peak)
+    master_mix = normalize_peak(master_mix, 0.88)
 
     sf.write(output_path, master_mix, SR)
 

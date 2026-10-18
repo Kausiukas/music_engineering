@@ -11,6 +11,8 @@ import json
 import asyncio
 import tempfile
 import numpy as np
+from audiocore.dsp import limit_peak
+from audiocore.tts import save_speech
 import soundfile as sf
 import librosa
 from typing import Dict, List, Any, Tuple, Optional
@@ -77,12 +79,10 @@ SONG_PHRASES = {
 
 async def _generate_edge_tts_audio(text: str, voice: str = "lt-LT-OnaNeural", rate: str = "+0%") -> np.ndarray:
     """Invokes Edge-TTS to generate clean raw audio array."""
-    import edge_tts
-    comm = edge_tts.Communicate(text, voice, rate=rate)
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tf:
         temp_mp3 = tf.name
     try:
-        await comm.save(temp_mp3)
+        await save_speech(text, voice, temp_mp3, rate=rate)
         y, sr = librosa.load(temp_mp3, sr=44100, mono=True)
         return y
     finally:
@@ -229,9 +229,7 @@ def generate_3vocal_neural_recreation(
                 mono_track[i_st:i_en] += phrase_audio[:i_en - i_st] * vol
 
         # Peak normalize voice track
-        v_peak = np.max(np.abs(mono_track))
-        if v_peak > 0.88:
-            mono_track = (mono_track / v_peak) * 0.88
+        mono_track = limit_peak(mono_track, ceiling=0.88)
 
         # Apply Stereo Panning: [-1.0 Left, 1.0 Right]
         pan_rad = (pan_angle + 1.0) * (np.pi / 4.0)

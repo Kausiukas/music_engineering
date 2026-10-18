@@ -17,6 +17,8 @@ import json
 import asyncio
 import tempfile
 import numpy as np
+from audiocore.tts import save_speech
+from audiocore.pitch import midi_to_hz
 import soundfile as sf
 import librosa
 from typing import Dict, List, Any, Optional, Union
@@ -61,12 +63,10 @@ def _run_async_safe(coro):
 
 async def _synthesize_phrase_edge_tts(text: str, voice: str = "lt-LT-OnaNeural", pitch: str = "+0Hz") -> np.ndarray:
     """Synthesizes a complete phrase or clause with Edge-TTS using native neural pitch."""
-    import edge_tts
-    comm = edge_tts.Communicate(text, voice, pitch=pitch)
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tf:
         temp_path = tf.name
     try:
-        await comm.save(temp_path)
+        await save_speech(text, voice, temp_path, pitch=pitch)
         y, _ = librosa.load(temp_path, sr=SR, mono=True)
         return y
     finally:
@@ -319,7 +319,6 @@ def synthesize_unflattened_rhythm_section(
     chord_names = [c.get('chord', 'Am') for c in chords] if chords else ['Am', 'F', 'E7', 'Am']
 
     from trio_synthetic_recreator import chord_to_pitches, TrioSyntheticRecreator
-    midi_to_hz = TrioSyntheticRecreator.midi_to_hz
 
     for m in range(num_measures):
         c_name = chord_names[m % len(chord_names)]
