@@ -1,0 +1,148 @@
+# Source of truth for GitHub labels, milestones and issues.
+# `uv run --with pyyaml python tools/plan_sync.py` creates anything missing; it never edits or closes
+# existing issues. Done-when criteria are read from the plan docs by ID, so they live in one place.
+
+milestones:
+  - title: "Gate 0 — Foundation and spike"
+    description: "CUDA, hermetic tests per stage, scorecard baseline, SoundCraft spike, host ADR, approved gold standards. See docs/plan/dod.md#per-phase-gate"
+  - title: "Gate 1 — Sidecar upgrade"
+    description: "Separation, pitch, per-family transcription, EN+LT voice, score/performance layers, batch alignment, sourcing. Note F >= baseline + 15"
+  - title: "Gate 2 — Session assembly"
+    description: "Structure markers and one-call session assembly; 3-minute song to session in <= 10 min"
+  - title: "Gate 3 — Synth matching, editing and UI"
+    description: "Synth matching, score view, lyric editing, re-voicing, loops and mixes; every v1 Must deliverable scores 100 in EN and LT"
+
+labels:
+  type:requirement:  {color: "1d76db", description: "Functional requirement (FR) from the PRD"}
+  type:user-action:  {color: "0e8a16", description: "Something the user can do; accepted by walkthrough"}
+  type:family:       {color: "5319e7", description: "Instrument family transcription + notation"}
+  type:task:         {color: "c5def5", description: "Enabling work item"}
+  type:decision:     {color: "d93f0b", description: "Open question that needs a recorded decision (ADR or plan PR)"}
+  area:ingest:       {color: "fbca04", description: ""}
+  area:separation:   {color: "fbca04", description: ""}
+  area:transcription: {color: "fbca04", description: "Pitch, notes, notation"}
+  area:voice:        {color: "fbca04", description: "STT, alignment, lyrics, re-voicing"}
+  area:alignment:    {color: "fbca04", description: "Units, batch alignment, score/performance"}
+  area:synth:        {color: "fbca04", description: "Synth matching and recreation"}
+  area:session:      {color: "fbca04", description: "Host, session assembly, export"}
+  area:ui:           {color: "fbca04", description: ""}
+  area:sourcing:     {color: "fbca04", description: "Gold data sourcing and review"}
+  area:scorecard:    {color: "fbca04", description: "Scoring, evaluation, gold provenance"}
+  area:infra:        {color: "fbca04", description: "Runtime, CI, tests"}
+  lang:en:           {color: "bfd4f2", description: "Scored for English"}
+  lang:lt:           {color: "bfd4f2", description: "Scored for Lithuanian"}
+  priority:must:     {color: "b60205", description: ""}
+  priority:should:   {color: "e99695", description: ""}
+  priority:could:    {color: "f9d0c4", description: ""}
+  agreement:proposed: {color: "ededed", description: "Row not yet agreed in the plan"}
+  agreement:agreed:  {color: "0e8a16", description: "Row agreed in the plan"}
+  agreement:changed: {color: "fef2c0", description: "Row changed and agreed in the plan"}
+
+# Shorthand used below: g0..g3 = milestones in order.
+items:
+  # --- Gate 0 tasks -----------------------------------------------------------------------
+  - {id: T0-1, title: "CUDA torch on the GTX 1660", gate: g0, type: task, priority: must, area: infra,
+     body: "Switch the remix env to CUDA torch wheels; `torch.cuda.is_available()` is True and the CPU path still passes. Keep peak VRAM < 5 GB."}
+  - {id: T0-2, title: "One hermetic test per pipeline stage", gate: g0, type: task, priority: must, area: infra,
+     body: "Ingest, separation, pitch, transcription, evaluation each get at least one hermetic test with stub models or tiny fixtures (no network)."}
+  - {id: T0-3, title: "Build the scorecard (scores 100 itself)", gate: g0, type: task, priority: must, area: scorecard,
+     doc: scorecard.md#tracking-mechanism,
+     body: "Registry, language packs, metric providers, scoring run, history tables, report with Q/E/score shown separately, GitHub sync, CI regression rule. First run stores the EN and LT baseline for every deliverable."}
+  - {id: T0-4, title: "SoundCraft spike", gate: g0, type: task, priority: must, area: session,
+     body: "Build SoundCraft v0.7.0 and report every command the PRD relies on (markers.add, batch keep_going, instrument slots, MCP roots) as works / missing / broken."}
+  - {id: T0-5, title: "Approved gold standards", gate: g0, type: task, priority: must, area: scorecard, langs: [en, lt],
+     body: "- [ ] Approval records (author, approving musician, scope, checksum) for Grikiai, Virusas and Prie Topolio\n- [ ] Musicians mark each LT song's form route and improvised spans\n- [ ] One LT song timed fully by ear as the Lithuanian benchmark\n- [ ] First EN gold songs commissioned or sourced\n- [ ] One EN song timed fully by ear as the English benchmark"}
+  - {id: T0-6, title: "STT tournament, English and Lithuanian", gate: g0, type: task, priority: must, area: voice, langs: [en, lt],
+     body: "Run cloud STT services, Whisper large-v3/turbo, faster-whisper and a Lithuanian-tuned model on gold lyrics; report WER per language and pick the stage-3 engines."}
+
+  # --- Decisions --------------------------------------------------------------------------
+  - {id: D-1, title: "Host: SoundCraft or Python studio + web UI", gate: g0, type: decision, priority: must, area: session,
+     body: "Decided from the T0-4 spike; recorded as an ADR in docs/adr/."}
+  - {id: D-2, title: "UI path: native egui panel (A) or browser hybrid with OSMD (B)", gate: g0, type: decision, priority: should, area: ui}
+  - {id: D-3, title: "First built-in synth for matching and its parameter list", gate: g1, type: decision, priority: should, area: synth}
+  - {id: D-4, title: "Cloud STT and TTS services for the first tournament", gate: g0, type: decision, priority: must, area: voice}
+  - {id: D-5, title: "Sourcing: which sources first; disk and cloud budgets", gate: g0, type: decision, priority: must, area: sourcing,
+     doc: sourcing.md#open-questions}
+  - {id: D-6, title: "First approved musicians for EN and LT; payment or credit", gate: g0, type: decision, priority: must, area: sourcing}
+  - {id: D-7, title: "Use tier D community sources (MuseScore, TAB sites) or not", gate: g1, type: decision, priority: should, area: sourcing}
+  - {id: D-8, title: "Lithuanian archives: access and terms", gate: g1, type: decision, priority: should, area: sourcing, langs: [lt]}
+  - {id: D-9, title: "Smallest exportable loop unit (chord span, bar or phrase)", gate: g3, type: decision, priority: should, area: alignment}
+  - {id: D-10, title: "Mix limits: tempo stretch and transposition", gate: g3, type: decision, priority: could, area: alignment}
+
+  # --- Requirements (criteria read from prd.md and dod.md) --------------------------------
+  - {id: FR-1,  gate: g1, type: requirement, priority: must, area: ingest}
+  - {id: FR-2,  gate: g1, type: requirement, priority: must, area: separation}
+  - {id: FR-3,  gate: g1, type: requirement, priority: must, area: transcription}
+  - {id: FR-4,  gate: g1, type: requirement, priority: must, area: transcription}
+  - {id: FR-5,  gate: g2, type: requirement, priority: should, area: alignment}
+  - {id: FR-6,  gate: g3, type: requirement, priority: should, area: synth}
+  - {id: FR-7,  gate: g2, type: requirement, priority: must, area: session}
+  - {id: FR-8,  gate: g3, type: requirement, priority: should, area: ui}
+  - {id: FR-9,  gate: g1, type: requirement, priority: must, area: scorecard}
+  - {id: FR-10, gate: g1, type: requirement, priority: must, area: infra}
+  - {id: FR-11, gate: g1, type: requirement, priority: must, area: transcription}
+  - {id: FR-12, gate: g1, type: requirement, priority: must, area: voice, langs: [en, lt]}
+  - {id: FR-13, gate: g3, type: requirement, priority: must, area: voice, langs: [en, lt]}
+  - {id: FR-14, gate: g3, type: requirement, priority: should, area: voice, langs: [en, lt]}
+  - {id: FR-15, gate: g0, type: requirement, priority: must, area: scorecard}
+  - {id: FR-16, gate: g1, type: requirement, priority: must, area: sourcing, langs: [en, lt]}
+  - {id: FR-17, gate: g1, type: requirement, priority: must, area: alignment}
+  - {id: FR-18, gate: g1, type: requirement, priority: must, area: alignment}
+  - {id: FR-19, gate: g3, type: requirement, priority: should, area: alignment}
+
+  # --- Instrument families (criteria read from dod.md) ------------------------------------
+  - {id: F-piano,  family: "Piano / keys",     gate: g1, type: family, priority: must, area: transcription}
+  - {id: F-guitar, family: "Guitar",           gate: g1, type: family, priority: must, area: transcription}
+  - {id: F-bass,   family: "Bass",             gate: g1, type: family, priority: must, area: transcription}
+  - {id: F-drums,  family: "Drums and kick",   gate: g1, type: family, priority: must, area: transcription}
+  - {id: F-synth,  family: "Synth lead / pad", gate: g1, type: family, priority: must, area: transcription}
+  - {id: F-sfx,    family: "SFX / other",      gate: g1, type: family, priority: should, area: transcription}
+
+  # --- User actions (criteria, priority and agreement read from the docs) -----------------
+  - {id: U1,  gate: g1, area: ingest}
+  - {id: U2,  gate: g1, area: ui}
+  - {id: U3,  gate: g1, area: separation}
+  - {id: U4,  gate: g1, area: separation}
+  - {id: U5,  gate: g1, area: transcription}
+  - {id: U6,  gate: g1, area: transcription}
+  - {id: U7,  gate: g3, area: ui}
+  - {id: U8,  gate: g1, area: transcription}
+  - {id: U9,  gate: g2, area: alignment}
+  - {id: U10, gate: g3, area: synth}
+  - {id: U11, gate: g3, area: synth}
+  - {id: U12, gate: g2, area: synth}
+  - {id: U13, gate: g2, area: session}
+  - {id: U14, gate: g2, area: synth}
+  - {id: U15, gate: g2, area: session}
+  - {id: U16, gate: g1, area: scorecard}
+  - {id: U17, gate: g1, area: ingest}
+  - {id: U18, gate: g1, area: infra}
+  - {id: V1,  gate: g1, area: voice, langs: [en, lt]}
+  - {id: V2,  gate: g1, area: voice, langs: [en, lt]}
+  - {id: V3,  gate: g1, area: voice, langs: [en, lt]}
+  - {id: V4,  gate: g1, area: voice, langs: [en, lt]}
+  - {id: V5,  gate: g1, area: voice, langs: [en, lt]}
+  - {id: V6,  gate: g1, area: voice, langs: [en, lt]}
+  - {id: V7,  gate: g3, area: voice, langs: [en, lt]}
+  - {id: V8,  gate: g1, area: voice, langs: [en, lt]}
+  - {id: V9,  gate: g3, area: voice, langs: [en, lt]}
+  - {id: V10, gate: g3, area: voice, langs: [en, lt]}
+  - {id: V11, gate: g3, area: voice, langs: [en, lt]}
+  - {id: R1,  gate: g1, area: sourcing}
+  - {id: R2,  gate: g1, area: sourcing}
+  - {id: R3,  gate: g1, area: sourcing}
+  - {id: R4,  gate: g1, area: sourcing}
+  - {id: R5,  gate: g1, area: sourcing}
+  - {id: R6,  gate: g1, area: sourcing}
+  - {id: R7,  gate: g1, area: sourcing}
+  - {id: R8,  gate: g1, area: sourcing}
+  - {id: R9,  gate: g1, area: sourcing}
+  - {id: R10, gate: g1, area: sourcing}
+  - {id: M1,  gate: g3, area: alignment}
+  - {id: M2,  gate: g3, area: alignment}
+  - {id: M3,  gate: g3, area: alignment}
+  - {id: M4,  gate: g1, area: alignment}
+  - {id: M5,  gate: g1, area: alignment}
+  - {id: M6,  gate: g3, area: alignment}
+  - {id: M7,  gate: g3, area: alignment}
+  - {id: M8,  gate: g3, area: alignment}

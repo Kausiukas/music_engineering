@@ -1,0 +1,20 @@
+name: Decision needed
+description: An open question that blocks work and must be recorded (ADR or plan PR).
+title: "[D-] "
+labels: ["type:decision"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options and trade-offs
+  - type: input
+    id: blocks
+    attributes:
+      label: Blocks
+      description: Deliverables that wait on this (issue numbers)

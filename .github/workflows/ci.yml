@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  audiocore:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/audiocore
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv run --extra tts pytest -q
+
+  remix-hermetic:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/remix_studio
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg libsndfile1
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --extra pdf
+      - run: uv run pytest -q -m "not slow and not artifact"
+
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Every backlog item resolves against the plan docs
+        run: uv run --no-project --with pyyaml python tools/plan_sync.py --dry-run --offline

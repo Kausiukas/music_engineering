@@ -1,0 +1,22 @@
+name: Task or bug
+description: Work that serves an existing deliverable, or something broken.
+labels: ["type:task"]
+body:
+  - type: input
+    id: deliverable
+    attributes:
+      label: Deliverable
+      description: Which deliverable this serves (FR-…, U…, V…, F-…, T0-…), with its issue number
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What and why
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      value: "- [ ] "

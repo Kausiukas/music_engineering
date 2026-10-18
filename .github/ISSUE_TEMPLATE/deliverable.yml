@@ -1,0 +1,32 @@
+name: Deliverable
+description: A new requirement, user action or instrument family. Add it to the plan and backlog.yaml first.
+title: "[ID] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Deliverables normally come from `docs/plan/backlog.yaml` via `tools/plan_sync.py`. Use this form only
+        if you are adding the plan row in the same PR, and give the issue the same ID.
+  - type: input
+    id: plan
+    attributes:
+      label: Plan reference
+      description: Link to the row in docs/plan (PRD, DoD, sourcing or alignment)
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Copied from the plan; the evidence that proves it
+      value: "- [ ] "
+    validations:
+      required: true
+  - type: dropdown
+    id: langs
+    attributes:
+      label: Scored for
+      options: [any language, EN and LT, EN only, LT only]
+    validations:
+      required: true

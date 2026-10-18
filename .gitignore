@@ -1,0 +1,34 @@
+# --- Python / tooling -------------------------------------------------------
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# --- Runtime data (lives under data/, see data/README.md) --------------------
+data/*
+!data/README.md
+*.wav
+*.flac
+*.mp3
+*.ogg
+*.m4a
+*.webm
+*.mp4
+*.zip
+*.tar.gz
+*.db
+*.db-journal
+
+# --- Secrets ----------------------------------------------------------------
+*.env
+!*.env.example
+
+# --- Scratch ----------------------------------------------------------------
+scratch/
+dist/
+
+# Frozen test inputs (small, versioned on purpose)
+!apps/*/tests/fixtures/**
